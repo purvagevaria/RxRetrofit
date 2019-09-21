@@ -1,0 +1,49 @@
+
+import android.app.Activity
+import android.content.Context
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.view.View
+import com.notimp.R
+
+object NetworkUtils {
+    fun isOnline(context: Context): Boolean {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val netInfo = cm.activeNetworkInfo
+
+        return (netInfo != null
+                && netInfo.isConnectedOrConnecting
+                && cm.activeNetworkInfo.isAvailable
+                && cm.activeNetworkInfo.isConnected)
+
+    }
+
+    fun checkInternetAndShoeAlert(context: Context, view: View): Boolean {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val netInfo = cm.activeNetworkInfo
+
+        var isAbailable = netInfo != null
+                && netInfo.isConnectedOrConnecting
+                && cm.activeNetworkInfo.isAvailable
+                && cm.activeNetworkInfo.isConnected
+
+        if (!isAbailable) {
+            Notify.snackbar(context.resources.getString(R.string.alert_internet_connection), context, view)
+        }
+
+        return isAbailable
+    }
+
+    fun getAppVersionName(ctx: Activity): String {
+        var pInfo: PackageInfo? = null
+        try {
+            pInfo = ctx.packageManager.getPackageInfo(ctx.packageName, 0)
+        } catch (e: PackageManager.NameNotFoundException) {
+            e.printStackTrace()
+        }
+
+        return pInfo!!.versionName + ""
+    }
+
+}
