@@ -1,0 +1,50 @@
+
+package com.pg.mvvmrxjava
+
+import android.os.Bundle
+import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.DataBindingUtil
+import com.notimp.adapter.researcher.DummyAdapter
+import com.pg.mvvmrxjava.databinding.ActivityMainBinding
+import com.pg.rxjava.webservice.NetworkCallback
+import com.pg.rxjava.webservice.RestClient
+import com.pg.rxjava.webservice.response.SymptomResponse
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.activity_main.*
+
+class MainActivity : AppCompatActivity(), NetworkCallback {
+    private var mainBinding: ActivityMainBinding? = null
+    private val disposable = CompositeDisposable()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        mainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+
+        val subscribe = RestClient.get()!!
+            .getSymptom()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ symptomResponse -> this.onSuccess("Symptom", symptomResponse) },
+                { throwable -> this.onFail("Symptom", throwable) })
+
+        disposable.add(subscribe)
+    }
+
+    override fun onSuccess(serviceName: String, responseObject: Any) {
+        when (serviceName) {
+            "Symptom" -> {
+                val response = responseObject as SymptomResponse
+                Log.d("response ", "Response " + response.DataObject!!.SymptomList!!.size)
+                var adapter = DummyAdapter(response.DataObject!!.SymptomList!!)
+                rvSymptomList.adapter = adapter
+            }
+        }
+    }
+
+    override fun onFail(serviceName: String, throwable: Throwable) {
+
+    }
+}
