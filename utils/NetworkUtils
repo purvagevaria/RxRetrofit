@@ -46,4 +46,17 @@ object NetworkUtils {
         return pInfo!!.versionName + ""
     }
 
+
+    fun getUserInfo(context: Context): UserBean? {
+        try {
+            val gson = Gson()
+            val json = getString(USER_INFO, "", context)
+            return gson.fromJson<UserBean>(json, UserBean::class.java)
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        }
+        return null
+    }
+
+
 }
